@@ -8,7 +8,7 @@ from torch.autograd import Variable
 from utils.craft_helper import resize_aspect_ratio, normalizeMeanVariance, getDetBoxes, adjustResultCoordinates
 
 class Tflite_Detection(object):
-    def __init__(self, model_path, text_threshold = 0.7, link_threshold = 0.4,\
+    def __init__(self, model_path, text_threshold = 0.7, link_threshold = 0.3,\
                  low_text = 0.4, canvas_size = 320, mag_ratio = 1.5, poly=False):
         self.text_threshold = text_threshold
         self.link_threshold = link_threshold
@@ -35,22 +35,22 @@ class Tflite_Detection(object):
         return y, feature
 
     # format polys tl, tr, br, bl
-    def draw_image(self, raw_image, polys, canvas_size):
+    def draw_image(self, raw_image, polys, alpha=3):
         h, w, _ = raw_image.shape
         for bbox in polys:
             bbox = np.array(bbox).astype(np.int32).reshape((-1))
             bbox = bbox.reshape(-1, 2)
     
-            min_coord = [int(bbox[0][0]* (w/self.canvas_size)), int(bbox[0][1]* (h/self.canvas_size))]
+            min_coord = [int(bbox[0][0]* (w/self.canvas_size)), int(bbox[0][1]* (h/self.canvas_size))-alpha]
             max_coord = [int(bbox[2][0]* (w/self.canvas_size)), int(bbox[2][1]* (h/self.canvas_size))]
 
             cv2.rectangle(raw_image, min_coord, max_coord, (0, 0, 255), 2)
         
         return raw_image
 
-    def crop_image(self, raw_image, bbox):
+    def crop_image(self, raw_image, bbox, alpha=3): # alpha: set: ymin - alpha
         h, w, _ = raw_image.shape
-        min_coord = [int(bbox[0][0]* (w/self.canvas_size)), int(bbox[0][1]* (h/self.canvas_size))]
+        min_coord = [int(bbox[0][0]* (w/self.canvas_size)), int(bbox[0][1]* (h/self.canvas_size))-alpha]
         max_coord = [int(bbox[2][0]* (w/self.canvas_size)), int(bbox[2][1]* (h/self.canvas_size))]
 
         return raw_image[min_coord[1]:max_coord[1], min_coord[0]:max_coord[0]]
@@ -91,10 +91,10 @@ class Tflite_Detection(object):
 if __name__ == '__main__':
     tflite_detection = Tflite_Detection("craft_float_320.tflite")
 
-    image_path = '000.jpg'
+    image_path = 'demo.PNG'
     image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
 
     polys = tflite_detection.detect_text(image)
 
-    cv2.imshow("image", tflite_detection.crop_image(image, polys[0]))
-    cv2.waitKey(0)
+    cv2.imshow("image", tflite_detection.draw_image(image, polys))
+    cv2.waitKey(0) 

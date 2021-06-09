@@ -36,7 +36,7 @@ class Tflite_Recognizer(object):
 
         return output
 
-    def ctc_decode(self, preds, characters='0123456789abcdefghijklmnopqrstuvwxyz'):
+    def ctc_decode(self, preds, characters="0123456789abcdefghijklmnopqrstuvwxyz@/:.-"):
         pred_index = np.argmax(preds, axis=2)
         char_list = list(characters)
         char_dict = {}

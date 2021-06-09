@@ -46,71 +46,10 @@ def resize_aspect_ratio(img, square_size, interpolation, mag_ratio=1):
 
     return resized, ratio, size_heatmap
 
-def cvt2HeatmapImg(img):
-    img = (np.clip(img, 0, 1) * 255).astype(np.uint8)
-    img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
-    return img
-
-def saveResult(img_file, img, boxes, dirname='./result/', verticals=None, texts=None):
-        """ save text detection result one by one
-        Args:
-            img_file (str): image file name
-            img (array): raw image context
-            boxes (array): array of result file
-                Shape: [num_detections, 4] for BB output / [num_detections, 4] for QUAD output
-        Return:
-            None
-        """
-        img = np.array(img)
-
-        # make result file list
-        filename, file_ext = os.path.splitext(os.path.basename(img_file))
-
-        # result directory
-        res_file = dirname + "res_" + filename + '.txt'
-        res_img_file = dirname + "res_" + filename + '.jpg'
-
-        if not os.path.isdir(dirname):
-            os.mkdir(dirname)
-        #data = open('task3.txt', 'w')
-        count = 0
-        with open(res_file, 'w') as f:
-            for i, box in enumerate(boxes):
-                #text = save_polygon(img, box, count)
-                #box_data = ""
-                #for co_ord in box:
-                #    box_data+=f"{co_ord[0]}, {co_ord[1]}"
-                #data.write(box_data+","+text+"\n")
-                #count+=1
-                poly = np.array(box).astype(np.int32).reshape((-1))
-                #strResult = ','.join([str(p) for p in poly]) + '\r\n'
-                #f.write(strResult)
-                poly = poly.reshape(-1, 2)
-                min_co = tuple(np.min(poly, axis=0))
-                max_co = tuple(np.max(poly, axis=0))
-                #x_1, x_2, y_1, y_2 = poly[0][0], poly[1][0], poly[1][1], poly[2][1]
-                cv2.rectangle(img, min_co, max_co, (0, 0, 255), 2)
-                #cv2.polylines(img, [poly.reshape((-1, 1, 2))], True, color=(0, 0, 255), thickness=2)
-                ptColor = (0, 255, 255)
-                if verticals is not None:
-                    if verticals[i]:
-                        ptColor = (255, 0, 0)
-
-                if texts is not None:
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    font_scale = 0.5
-                    cv2.putText(img, "{}".format(texts[i]), (poly[0][0]+1, poly[0][1]+1), font, font_scale, (0, 0, 0), thickness=1)
-                    cv2.putText(img, "{}".format(texts[i]), tuple(poly[0]), font, font_scale, (0, 255, 255), thickness=1)
-
-        # Save result image
-        cv2.imwrite(res_img_file, img)
-
-""" auxilary functions """
 # unwarp corodinates
 def warpCoord(Minv, pt):
     out = np.matmul(Minv, (pt[0], pt[1], 1))
     return np.array([out[0]/out[2], out[1]/out[2]])
-""" end of auxilary functions """
 
 
 def getDetBoxes_core(textmap, linkmap, text_threshold, link_threshold, low_text):

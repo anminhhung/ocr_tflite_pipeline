@@ -144,3 +144,7 @@ models/
 .vscode
 
 *.tflite
+
+PaddleOCR/
+en_number_mobile_v2.0_rec_infer
+demo.txt

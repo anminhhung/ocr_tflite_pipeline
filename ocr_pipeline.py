@@ -22,6 +22,10 @@ class OCR(object):
             preds = self.tflite_recognizer.inference(image_text)
             text = self.tflite_recognizer.ctc_decode(preds)
 
+            print("text: ", text)
+            cv2.imshow("text", image_text)
+            cv2.waitKey(0)
+
             list_texts.append(text)
         
         return list_texts
